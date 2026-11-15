@@ -1,0 +1,9 @@
+---
+import EssayPage from '../../../components/Essay.astro';
+import { essays } from '../../../data/essays';
+export function getStaticPaths() {
+  return essays.map(essay => ({ params: { slug: essay.slug }, props: { essay } }));
+}
+const { essay } = Astro.props;
+---
+<EssayPage locale="zh" essay={essay}/>

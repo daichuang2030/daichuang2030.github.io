@@ -1,0 +1,32 @@
+---
+import { ArrowLeft, ArrowUpRight, Copy } from 'lucide-astro';
+import Layout from '../layouts/Layout.astro';
+import { copy, homePath, notePath, type Locale } from '../data/site';
+import { essays, type Essay } from '../data/essays';
+interface Props { locale: Locale; essay: Essay; }
+const { locale, essay } = Astro.props;
+const t = copy[locale];
+---
+<Layout locale={locale} title={`${essay.title[locale]} | Peter DAI Chuang`} description={essay.excerpt[locale]} alternatePath={notePath(locale === 'en' ? 'zh' : 'en', essay.slug)} article>
+  <article class="article-container">
+    <a class="article-back" href={`${homePath(locale)}#perspectives`}><ArrowLeft size={16}/>{t.allNotes}</a>
+    <header class="article-header"><div class="essay-meta"><span>{essay.topic[locale]}</span><span>{essay.readTime[locale]}</span></div><h1>{essay.title[locale]}</h1><p class="article-deck">{essay.excerpt[locale]}</p><div class="article-byline"><strong>Peter DAI Chuang</strong><span>{t.essayDraft}</span></div></header>
+    <div class="article-body">{essay.sections.map(section => <section><h2>{section.heading[locale]}</h2>{section.paragraphs[locale].map(p => <p>{p}</p>)}</section>)}</div>
+    <p class="article-disclosure">{t.draftNote}</p>
+    <div class="article-tools"><a class="text-link" href={`${homePath(locale)}#connect`}>{t.connectLabel}<ArrowUpRight size={17}/></a><button class="copy-link" data-copy-label={t.share} data-copied-label={t.copied} data-failure={t.copyFailed}><Copy size={16}/><span>{t.share}</span></button></div>
+    <p class="share-feedback" role="status" aria-live="polite"></p>
+    <aside class="related-notes" aria-labelledby="related-title"><h2 id="related-title">{t.continueReading}</h2>{essays.filter(item => item.slug !== essay.slug).map(item => <a class="related-note" href={notePath(locale, item.slug)}><span>{item.title[locale]}</span><ArrowUpRight size={19}/></a>)}</aside>
+  </article>
+</Layout>
+<script>
+  const button = document.querySelector<HTMLButtonElement>('.copy-link');
+  button?.addEventListener('click', async () => {
+    const feedback = document.querySelector<HTMLElement>('.share-feedback');
+    try {
+      await navigator.clipboard.writeText(window.location.href);
+      if (feedback) feedback.textContent = button.dataset.copiedLabel || 'Link copied';
+    } catch {
+      if (feedback) feedback.textContent = button.dataset.failure || 'Copy the address from your browser to share this page.';
+    }
+  });
+</script>

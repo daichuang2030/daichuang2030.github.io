@@ -1,0 +1,12 @@
+node_modules/
+dist/
+.astro/
+.env
+.env.*
+!.env.example
+.DS_Store
+
+# Local review files contain provenance paths and prepublication notes.
+CONTENT-SOURCES.md
+DESIGN.md
+QA.md

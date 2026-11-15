@@ -1,0 +1,119 @@
+---
+import { ArrowUpRight, ArrowUp, Menu, X } from 'lucide-astro';
+import '@fontsource/manrope/400.css';
+import '@fontsource/manrope/500.css';
+import '@fontsource/manrope/600.css';
+import '@fontsource/manrope/700.css';
+import '@fontsource/manrope/800.css';
+import '@fontsource/newsreader/400.css';
+import '../styles/global.css';
+import { copy, links, name, homePath, withBase, type Locale } from '../data/site';
+interface Props { locale?: Locale; title?: string; description?: string; alternatePath?: string; article?: boolean; }
+const { locale = 'en', title, description, alternatePath, article = false } = Astro.props;
+const t = copy[locale];
+const home = homePath(locale);
+const ids = ['about', 'practice', 'perspectives', 'connect'];
+const configuredSite = Astro.site;
+const canonical = configuredSite ? new URL(Astro.url.pathname, configuredSite).href : undefined;
+const otherLanguage = alternatePath || homePath(locale === 'en' ? 'zh' : 'en');
+const alternate = configuredSite ? new URL(otherLanguage, configuredSite).href : undefined;
+const schema = {
+  '@context': 'https://schema.org', '@type': 'Person', name,
+  alternateName: ['Chuang DAI', '戴闯'],
+  description: t.description,
+  sameAs: [links.linkedin, links.x, links.orcid, links.openreview],
+  ...(configuredSite ? { url: new URL(home, configuredSite).href } : {}),
+};
+---
+<!doctype html>
+<html lang={locale === 'zh' ? 'zh-CN' : 'en'}>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="theme-color" content="#132D50" />
+    <meta name="description" content={description || t.description} />
+    <meta name="author" content={name} />
+    {!configuredSite && <meta name="robots" content="noindex,nofollow" />}
+    <title>{title || t.title}</title>
+    <link rel="icon" type="image/svg+xml" href={withBase('favicon.svg')} />
+    {canonical && <link rel="canonical" href={canonical} />}
+    {canonical && <link rel="alternate" hreflang={locale === 'zh' ? 'zh-CN' : 'en'} href={canonical} />}
+    {alternate && <link rel="alternate" hreflang={locale === 'zh' ? 'en' : 'zh-CN'} href={alternate} />}
+    <meta property="og:type" content={article ? 'article' : 'website'} />
+    <meta property="og:title" content={title || t.title} />
+    <meta property="og:description" content={description || t.description} />
+    <meta property="og:site_name" content={name} />
+    <meta property="og:locale" content={locale === 'zh' ? 'zh_CN' : 'en_US'} />
+    {canonical && <meta property="og:url" content={canonical} />}
+    <meta property="og:image" content={configuredSite ? new URL(withBase('social-card.png'), configuredSite).href : withBase('social-card.png')} />
+    <meta property="og:image:alt" content="Peter DAI Chuang — Intelligence, in service of people." />
+    <meta name="twitter:card" content="summary_large_image" />
+    <script type="application/ld+json" set:html={JSON.stringify(schema)} />
+  </head>
+  <body>
+    <a class="skip-link" href="#main">{t.skip}</a>
+    <header class="site-header">
+      <div class="header-inner">
+        <a class="brand" href={home} aria-label={`${name} — ${locale === 'zh' ? '首页' : 'Home'}`}>
+          <svg class="brand-mark" viewBox="0 0 32 32" aria-hidden="true"><path d="M5 26V6h10c7 0 10 4 10 9s-3 9-10 9H5M12 6v20" fill="none" stroke="currentColor" stroke-width="2.4" /></svg>
+          <span>Peter <strong>DAI Chuang</strong></span>
+        </a>
+        <nav class="desktop-nav" aria-label={locale === 'en' ? 'Main navigation' : '主导航'}>
+          {ids.map((id, i) => <a href={`${home}#${id}`} data-nav={id}>{t.nav[i]}</a>)}
+        </nav>
+        <div class="header-controls">
+          <a class="language-switch" href={otherLanguage} lang={locale === 'en' ? 'zh-CN' : 'en'} aria-label={locale === 'en' ? 'Switch to Chinese' : 'Switch to English'}>{t.language}</a>
+          <button class="menu-toggle" aria-expanded="false" aria-controls="mobile-menu" aria-label={t.menu} data-open-label={t.menu} data-close-label={t.close}><Menu class="menu-open-icon" size={22}/><X class="menu-close-icon" size={22}/></button>
+        </div>
+      </div>
+      <nav id="mobile-menu" class="mobile-nav" aria-label={locale === 'en' ? 'Mobile navigation' : '移动导航'} hidden>
+        {ids.map((id, i) => <a href={`${home}#${id}`}>{t.nav[i]}<ArrowUpRight size={19}/></a>)}
+      </nav>
+    </header>
+    <main id="main" tabindex="-1"><slot /></main>
+    <footer class="site-footer">
+      <div class="container footer-inner">
+        <div><a class="footer-name" href={home}>{name}</a><p>{t.footer}</p></div>
+        <div class="footer-right"><span>© {new Date().getFullYear()}</span><a href="#main">{t.backTop}<ArrowUp size={16}/></a></div>
+      </div>
+    </footer>
+    <script>
+      const toggle = document.querySelector<HTMLButtonElement>('.menu-toggle');
+      const mobileMenu = document.querySelector<HTMLElement>('#mobile-menu');
+      function closeMenu(returnFocus = false) {
+        if (!toggle || !mobileMenu) return;
+        toggle.setAttribute('aria-expanded', 'false');
+        toggle.setAttribute('aria-label', toggle.dataset.openLabel || 'Open menu');
+        mobileMenu.hidden = true;
+        if (returnFocus) toggle.focus();
+      }
+      toggle?.addEventListener('click', () => {
+        if (!mobileMenu) return;
+        const open = toggle.getAttribute('aria-expanded') !== 'true';
+        toggle.setAttribute('aria-expanded', String(open));
+        toggle.setAttribute('aria-label', (open ? toggle.dataset.closeLabel : toggle.dataset.openLabel) || 'Menu');
+        mobileMenu.hidden = !open;
+      });
+      mobileMenu?.querySelectorAll('a').forEach((link) => link.addEventListener('click', () => closeMenu()));
+      document.addEventListener('keydown', (event) => { if (event.key === 'Escape' && toggle?.getAttribute('aria-expanded') === 'true') closeMenu(true); });
+      const wideScreen = window.matchMedia('(min-width: 901px)');
+      wideScreen.addEventListener('change', (event) => { if (event.matches) closeMenu(); });
+      window.addEventListener('scroll', () => {
+        if (window.scrollY < 100) document.querySelectorAll('[data-nav]').forEach(link => link.removeAttribute('aria-current'));
+      }, { passive: true });
+      const sections = document.querySelectorAll<HTMLElement>('section[data-observe]');
+      if ('IntersectionObserver' in window) {
+        const observer = new IntersectionObserver((entries) => {
+          entries.forEach((entry) => {
+            if (!entry.isIntersecting) return;
+            document.querySelectorAll('[data-nav]').forEach((link) => {
+              if ((link as HTMLElement).dataset.nav === entry.target.id) link.setAttribute('aria-current', 'location');
+              else link.removeAttribute('aria-current');
+            });
+          });
+        }, { rootMargin: '-20% 0px -55% 0px', threshold: 0 });
+        sections.forEach((section) => observer.observe(section));
+      }
+    </script>
+  </body>
+</html>
