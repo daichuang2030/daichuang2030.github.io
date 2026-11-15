@@ -2,7 +2,7 @@ export type Locale = 'en' | 'zh';
 export const name = 'Peter DAI Chuang';
 export const links = {
   linkedin: 'https://www.linkedin.com/in/daichuang/',
-  x: 'https://x.com/TaiPeterChvo',
+  x: 'https://x.com/PeterChuangDAI',
   orcid: 'https://orcid.org/0009-0005-0830-1697',
   openreview: 'https://openreview.net/profile?id=~Chuang_DAI1',
   hkstp: 'https://www.hkstp.org/zh-cn/park-life/news-and-events/news/Chery-Hong-Kong-Innovation-Centre-Lands-in-Science-Park',
